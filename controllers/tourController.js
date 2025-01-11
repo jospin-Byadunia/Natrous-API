@@ -37,7 +37,10 @@ exports.getTour = async (req, res) => {
   try {
     const tour = await Tour.findById(req.params.id);
     res.status(200).json({
-      data: tour,
+      status: 'success',
+      data: {
+        tour,
+      },
     });
   } catch (error) {
     res.status(404).json({
@@ -117,9 +120,6 @@ exports.getTourStats = async (req, res) => {
       {
         $sort: { avgPrice: 1 },
       },
-      // {
-      //   $match: { _id: { $ne: 'EASY' } },
-      // },
     ]);
     res.status(200).json({
       status: 'success',
