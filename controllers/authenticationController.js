@@ -1,6 +1,7 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 
 const User = require('../Models/userModel');
 const catchAsync = require('../utils/catchAsync');
@@ -13,6 +14,16 @@ const signToken = (id) => {
   });
 };
 
+const createSendToken = (user, statuCode, res) => {
+  const token = signToken(user._id);
+  res.status(statuCode).json({
+    status: 'Success',
+    token,
+    data: {
+      user,
+    },
+  });
+};
 exports.signUp = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     name: req.body.name,
@@ -22,14 +33,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
     passwordChangedAt: req.body.passwordChangedAt,
     role: req.body.role,
   });
-  const token = signToken(newUser._id);
-  res.status(201).json({
-    status: 'Success',
-    token,
-    data: {
-      user: newUser,
-    },
-  });
+  createSendToken(newUser, 201, res);
 });
 
 exports.logIn = catchAsync(async (req, res, next) => {
@@ -44,11 +48,8 @@ exports.logIn = catchAsync(async (req, res, next) => {
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401));
   }
-  const token = await signToken(user._id);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+
+  createSendToken(user, 200, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -151,10 +152,19 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.PasswordResetExprires = undefined;
 
   await user.save();
+  createSendToken(user, 200, res);
+});
 
-  const token = signToken(user._id);
-  res.status(201).json({
-    status: 'Success',
-    token,
-  });
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user._id).select('+password');
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    return next(new AppError('Your current password is incorrect', 401));
+  }
+
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+
+  await user.save();
+
+  createSendToken(user, 200, res);
 });
