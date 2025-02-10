@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const Tour = require('../Models/tourModel');
 
 dotenv.config({
-  path: 'G:/complete-node-bootcamp-master/natours/Natrous-API/config.env',
+  path: 'G:/complete-node-bootcamp-master/natours/Natrous-API/.env',
 });
 
 const DB = process.env.DATABASE.replace(
@@ -16,7 +16,7 @@ mongoose.connect(DB).then(() => console.log('DB connection successful'));
 
 //READ JSON FILE
 const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/data/tours-simple.json`, 'utf-8')
+  fs.readFileSync(`${__dirname}/data/tours.json`, 'utf-8')
 );
 
 //IMPORT DATA INTO DB

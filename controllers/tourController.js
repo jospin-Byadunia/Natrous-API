@@ -29,7 +29,7 @@ exports.getAllTours = CatchAsync(async (req, res, next) => {
   });
 });
 exports.getTour = CatchAsync(async (req, res, next) => {
-  const tour = await Tour.findById(req.params.id);
+  const tour = await Tour.findById(req.params.id).populate('reviews');
   if (!tour) {
     return next(new AppError('No tour found with that ID', 404));
   }
@@ -68,6 +68,7 @@ exports.updateTour = CatchAsync(async (req, res, next) => {
 
 exports.deleteTour = CatchAsync(async (req, res, next) => {
   const tour = await Tour.findByIdAndDelete(req.params.id);
+  console.log(tour);
   if (!tour) {
     return next(new AppError('No tour found with that ID', 404));
   }
